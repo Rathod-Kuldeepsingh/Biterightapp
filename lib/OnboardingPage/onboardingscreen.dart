@@ -1,4 +1,4 @@
-
+//onboarding page
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

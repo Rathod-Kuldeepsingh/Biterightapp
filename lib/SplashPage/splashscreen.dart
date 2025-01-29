@@ -1,4 +1,5 @@
 // ignore_for_file: unused_import
+//splash screen
 
 import 'package:biterightapp/AuthenticationPage/sharepreffrences.dart';
 import 'package:flutter/material.dart';

@@ -1,5 +1,5 @@
 // Assuming you have a homepage screen
-
+//signing page
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';

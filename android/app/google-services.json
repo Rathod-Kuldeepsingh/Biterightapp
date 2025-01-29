@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "201711429040",
+    "project_id": "biterightapp-32e7c",
+    "storage_bucket": "biterightapp-32e7c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:201711429040:android:4d61f56a7a186e914d2275",
+        "android_client_info": {
+          "package_name": "com.example.biterightapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB25dQcBjREwq5VXPAAqWy_ydwtpYrzlmA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

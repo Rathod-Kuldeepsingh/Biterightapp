@@ -1,4 +1,4 @@
-// ignore_for_file: unused_import
+// ignore_for_file: unused_import, use_build_context_synchronously
 //splash screen
 
 import 'package:biterightapp/AuthenticationPage/sharepreffrences.dart';

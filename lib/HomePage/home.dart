@@ -1,4 +1,6 @@
 //home navigation and divider drawer
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:biterightapp/Articles/artcles.dart';
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
 import 'package:biterightapp/MainPages/dash.dart';
@@ -17,7 +19,7 @@ class _HomeState extends State<Home> {
   User? _currentUser;
 
   // Pages for navigating content
-  final List<Widget> _pages = [BarcodeSearchScreen(), Artcles()];
+  final List<Widget> _pages = [BarcodeSearchScreen(), ArticlePage()];
 
   // Index for the selected page in the bottom navigation bar
   int _selectedIndex = 0;
@@ -46,6 +48,12 @@ class _HomeState extends State<Home> {
       MaterialPageRoute(builder: (context) => BarcodeSearchScreen()), // Replace with your home page widget
     );
   }
+    void _navigateToArticle() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => ArticlePage()), // Replace with your home page widget
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +62,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         toolbarHeight: 70,
         backgroundColor: Colors.lightBlueAccent,
-        title: Padding(
-          padding: EdgeInsets.all(10),
+        title: Center(
           child: Text(
             'BiteRight',
             style: GoogleFonts.hennyPenny(
@@ -93,7 +100,7 @@ class _HomeState extends State<Home> {
   ],
   selectedItemColor: Colors.blueAccent,  // Color of selected item
   unselectedItemColor: Colors.grey,      // Color of unselected items
-  backgroundColor: const Color.fromARGB(255, 236, 233, 233),         // Background color of the bottom nav
+  backgroundColor: Colors.white,         // Background color of the bottom nav
   elevation: 8.0,                        // Adding elevation for shadow effect
   type: BottomNavigationBarType.fixed,   // For fixed size items
 ),
@@ -232,6 +239,14 @@ class _HomeState extends State<Home> {
               _navigateToHome();
             },
           ),
+           _buildDrawerItem(
+            context,
+            icon: Icons.article_rounded,
+            title: 'Article',
+            onTap: () {
+              _navigateToHome();
+            },
+          ),
           _buildDrawerItem(
             context,
             icon: Icons.settings,
@@ -248,7 +263,7 @@ class _HomeState extends State<Home> {
           ),
           _buildDrawerItem(
             context,
-            icon: Icons.settings,
+            icon: Icons.feedback,
             title: 'Feedback',
             onTap: () {
               Navigator.pop(context);

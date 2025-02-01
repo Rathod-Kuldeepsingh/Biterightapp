@@ -1,4 +1,6 @@
  //loginpage
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:biterightapp/HomePage/home.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -305,7 +307,7 @@ Future<bool> _onWillPop() async {
                       padding: const EdgeInsets.only(bottom: 20.0),
                       child: ElevatedButton(
                         onPressed: () {
-                         Navigator.pushNamed(context, "/signup");
+                         Navigator.pushNamed(context, "/signup1");
       
                         },
                         style: ElevatedButton.styleFrom(

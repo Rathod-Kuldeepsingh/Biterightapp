@@ -1,7 +1,8 @@
-// ignore_for_file: avoid_print, deprecated_member_use, use_super_parameters
+// ignore_for_file: avoid_print, deprecated_member_use, use_super_parameters, unused_field, library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:biterightapp/HomePage/home.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -33,10 +34,62 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
   final TextEditingController _controller = TextEditingController();
   Map<String, dynamic>? _product;
   List<Map<String, dynamic>> _suggestedProducts = [];
+  List<String> _searchSuggestions = [];
   bool _isLoading = false;
   String? _errorMessage;
   final BarcodeScanner _barcodeScanner = BarcodeScanner();
   bool _isScanning = false;
+
+
+
+   Future<void> saveSearchHistory(String query) async {
+    try {
+      // Save the search history to Firestore
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('search_history')
+            .add({
+          'query': query,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error saving search history: $e');
+    }
+  }
+   Future<void> getSuggestions(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchSuggestions = [];
+      });
+      return;
+    }
+
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        final snapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('products')
+            .where('product_name', isGreaterThanOrEqualTo: query)
+            .where('product_name', isLessThanOrEqualTo: '$query\uf8ff') // Prefix matching
+            .get();
+
+        setState(() {
+          _searchSuggestions = snapshot.docs
+              .map((doc) => doc['product_name'] as String)
+              .toList();
+        });
+      }
+    } catch (e) {
+      print('Error fetching suggestions: $e');
+    }
+  }
+
 
   Future<void> getProductByBarcode(String barcode) async {
     final url = 'https://world.openfoodfacts.org/api/v0/product/$barcode.json';
@@ -58,6 +111,11 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
           setState(() {
             _product = data['product'];
           });
+   
+         //
+         
+           saveProductToFirestore(_product!);
+
 
           // Fetch suggested products after product is found
           fetchSuggestedProducts(_product!);
@@ -89,6 +147,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
       });
     }
   }
+  //
 
   Future<void> getProductByName(String productName) async {
     final url =
@@ -108,7 +167,12 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
           setState(() {
             _suggestedProducts =
                 List<Map<String, dynamic>>.from(data['products']);
+            
           });
+           saveSearchHistory(productName);
+           if (_suggestedProducts.isNotEmpty) {
+          saveProductToFirestore(_suggestedProducts[0]);
+        }
         } else {
           setState(() {
             _errorMessage = 'No products found';
@@ -220,6 +284,29 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
     }
   }
 
+  Future<void> saveProductToFirestore(Map<String, dynamic> product) async {
+  final userId = FirebaseAuth.instance.currentUser?.uid;
+  if (userId == null) return; // Ensure user is authenticated
+  
+  try {
+    // Save product data to Firestore under the user's collection
+    await FirebaseFirestore.instance.collection('users').doc(userId).collection('products').add({
+      'product_name': product['product_name'] ?? 'N/A',
+      'brands': product['brands'] ?? 'N/A',
+      'categories': product['categories'] ?? 'N/A',
+      'image_url': product['image_url'] ?? '',
+      'ingredients_text': product['ingredients_text'] ?? 'N/A',
+      'nutriments': product['nutriments'] ?? {},
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+    print('Product saved to Firestore');
+  } catch (e) {
+    print('Error saving product to Firestore: $e');
+  }
+}
+
+
+
   @override
   void dispose() {
     _barcodeScanner.close();
@@ -229,6 +316,8 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+    backgroundColor: Color(0xFFF5F5F5),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -245,7 +334,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
                           color: Colors.black,
                           fontSize: 16,
                           fontWeight: FontWeight.bold),
-                      hintText: 'Scan or Enter Barcode',
+                      hintText: 'Scan or Enter Barcode and Name',
                       hintStyle: TextStyle(
                         color: Colors.blueGrey.withOpacity(0.6),
                         fontSize: 14,
@@ -270,7 +359,9 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
                       contentPadding:
                           EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                     ),
-                    keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                getSuggestions(value); // Fetch suggestions as user types
+              },
                   ),
                 ],
               ),
@@ -297,7 +388,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.lightBlueAccent,
+                      backgroundColor:  Color.fromRGBO(7, 94, 84, 1.0),
                       padding:
                           EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -390,6 +481,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
                             );
                           },
                           child: Card(
+                            color: Color(0xFFF5F5F5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -442,8 +534,10 @@ class ProductDetailScreen extends StatelessWidget {
     final imageUrl = product['image_url'];
 
     return Scaffold(
+       backgroundColor: Color(0xFFF5F5F5),
       appBar: AppBar(
         title: Text('Product Details'),
+          backgroundColor:  Color(0xFFFFFCF2)
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

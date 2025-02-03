@@ -1,8 +1,9 @@
 //home navigation and divider drawer
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, unused_element
 
 import 'package:biterightapp/Articles/artcles.dart';
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
+import 'package:biterightapp/History/history.dart';
 import 'package:biterightapp/MainPages/dash.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +20,7 @@ class _HomeState extends State<Home> {
   User? _currentUser;
 
   // Pages for navigating content
-  final List<Widget> _pages = [BarcodeSearchScreen(), ArticlePage()];
+  final List<Widget> _pages = [BarcodeSearchScreen(), ArticlePage() ,HistoryPage()];
 
   // Index for the selected page in the bottom navigation bar
   int _selectedIndex = 0;
@@ -54,36 +55,55 @@ class _HomeState extends State<Home> {
       MaterialPageRoute(builder: (context) => ArticlePage()), // Replace with your home page widget
     );
   }
+   void _navigateToHistory() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => HistoryPage()), // Replace with your home page widget
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+
+      backgroundColor: Color(0xFFFFFCF2),
       appBar: AppBar(
         toolbarHeight: 70,
-        backgroundColor: Colors.lightBlueAccent,
-        title: Center(
-          child: Text(
+        backgroundColor: Color(0xFFFFFCF2),
+        title: Text(
             'BiteRight',
             style: GoogleFonts.hennyPenny(
-              textStyle: const TextStyle(fontSize: 30, color: Colors.white),
+              textStyle: const TextStyle(fontSize: 30, color: Color.fromRGBO(7, 94, 84, 1.0)),
             ),
           ),
-        ),
+        centerTitle: true,
         leading: Builder(
           builder: (BuildContext context) {
-            return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              iconSize: 35,
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
+            return Padding(
+              padding: const EdgeInsets.only(top: 8,bottom: 8,right: 0,left: 5),
+              child: IconButton(
+                icon: const Icon(Icons.menu, color: Color.fromRGBO(7, 94, 84, 1.0)),
+                iconSize: 35,
+                style: ButtonStyle(
+                 backgroundColor: WidgetStateProperty.all(Color(0xFFFFFCF2)),
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12), // Rounded button
+                ),
+              ),
+              elevation: WidgetStateProperty.all(4), // Add shadow
+                        
+                ),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              ),
             );
           },
         ),
       ),
       body: _pages[_selectedIndex], // Display the selected page
-      drawer: _buildDrawer(context),
+      drawer: buildDrawer(context, _currentUser),
       bottomNavigationBar: BottomNavigationBar(
   
   currentIndex: _selectedIndex,
@@ -97,10 +117,15 @@ class _HomeState extends State<Home> {
       icon: Icon(Icons.article,size: 30,),
       label: 'Articles',
     ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.history,size: 30,),
+      label: 'History',
+    )
   ],
-  selectedItemColor: Colors.blueAccent,  // Color of selected item
-  unselectedItemColor: Colors.grey,      // Color of unselected items
-  backgroundColor: Colors.white,         // Background color of the bottom nav
+  selectedItemColor: Color.fromRGBO(7, 94, 84, 1.0),  // Color of selected item
+  unselectedItemColor: Colors.black,      // Color of unselected items
+            backgroundColor: Color(0xFFF5F5F5),
+          // Background color of the bottom nav
   elevation: 8.0,                        // Adding elevation for shadow effect
   type: BottomNavigationBarType.fixed,   // For fixed size items
 ),
@@ -203,105 +228,119 @@ class _HomeState extends State<Home> {
   }
 
   // Drawer with user details
-  Drawer _buildDrawer(BuildContext context) {
-    return Drawer(
-      backgroundColor: Colors.white,
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: <Widget>[
-          UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
-              color: Colors.lightBlueAccent,
-            ),
-            accountName: Text(
-              _currentUser?.displayName ?? 'John Doe',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            accountEmail: Text(
-              _currentUser?.email ?? 'john.doe@example.com',
-              style: const TextStyle(fontSize: 16),
-            ),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Text(
-                _currentUser?.displayName != null
-                    ? _currentUser!.displayName![0].toUpperCase()
-                    : _currentUser?.email?[0].toUpperCase() ?? 'U',
-                style: const TextStyle(fontSize: 40.0, color: Colors.lightBlueAccent),
-              ),
-            ),
-          ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.home,
-            title: 'Home',
-            onTap: () {
-              _navigateToHome();
-            },
-          ),
-           _buildDrawerItem(
-            context,
-            icon: Icons.article_rounded,
-            title: 'Article',
-            onTap: () {
-              _navigateToHome();
-            },
-          ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.settings,
-            title: 'Settings',
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.logout,
-            title: 'Logout',
-            onTap: () => _confirmSignOut(context),
-          ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.feedback,
-            title: 'Feedback',
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          const Divider(),
-          _buildDrawerItem(
-            context,
-            icon: Icons.help,
-            title: 'Help & Support',
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          _buildDrawerItem(
-            context,
-            icon: Icons.info,
-            title: 'About Us',
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-        ],
-      ),
-    );
-  }
+  
 
-  // Drawer item builder
-  ListTile _buildDrawerItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.black),
-      title: Text(title, style: const TextStyle(fontSize: 16)),
-      onTap: onTap,
-    );
-  }
+Drawer buildDrawer(BuildContext context, User? currentUser) {
+  return Drawer(
+    width: 300,
+    backgroundColor:Color(0xFFF5F5F5),
+    child: Column(
+      children: [
+        UserAccountsDrawerHeader(
+          decoration: const BoxDecoration(
+           color: Color(0xFFFFFCF2)
+          ),
+          accountName: Text(
+            currentUser?.displayName ?? 'John Doe',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          accountEmail: Text(
+            currentUser?.email ?? 'john.doe@example.com',
+            style: const TextStyle(fontSize: 16,  color: Colors.black),
+          ),
+          currentAccountPicture: CircleAvatar(
+            backgroundColor: Color(0xFFF5F5F5),
+            radius: 30,
+            child: Text(
+              currentUser?.displayName != null
+                  ? currentUser!.displayName![0].toUpperCase()
+                  : currentUser?.email?[0].toUpperCase() ?? 'U',
+              style: const TextStyle(fontSize: 40.0, color: Color.fromRGBO(7, 94, 84, 1.0)),
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            children: [
+              _buildDrawerItem(
+                context,
+                icon: Icons.home,
+                title: 'Home',
+                   iconColor: Color.fromRGBO(7, 94, 84, 1.0),
+                onTap: () => _navigateToHome(),
+              ),
+              _buildDrawerItem(
+                context,
+                icon: Icons.article_rounded,
+                iconColor: Color.fromRGBO(7, 94, 84, 1.0),
+                title: 'Articles',
+                onTap: () => _navigateToHome(),
+              ),
+               _buildDrawerItem(
+                context,
+                icon: Icons.history,
+                title: 'History',
+                onTap: () => Navigator.pop(context),
+                   iconColor: Color.fromRGBO(7, 94, 84, 1.0),
+              ),
+              _buildDrawerItem(
+                context,
+                icon: Icons.settings,
+                title: 'Settings',
+                onTap: () => Navigator.pop(context),
+                   iconColor: Color.fromRGBO(7, 94, 84, 1.0),
+              ),
+              _buildDrawerItem(
+                context,
+                icon: Icons.feedback,
+                title: 'Feedback',
+                onTap: () => Navigator.pop(context),
+                   iconColor: Color.fromRGBO(7, 94, 84, 1.0),
+              ),
+              
+              _buildDrawerItem(
+                context,
+                icon: Icons.logout,
+                title: 'Logout',
+                onTap: () => _confirmSignOut(context),
+                iconColor: Colors.redAccent, // Highlight logout button
+              ),
+              const Divider(thickness: 1, indent: 16, endIndent: 16),
+              _buildDrawerItem(
+                context,
+                icon: Icons.help_outline,
+                title: 'Help & Support',
+                   iconColor: Color.fromRGBO(7, 94, 84, 1.0),
+                onTap: () => Navigator.pop(context),
+              ),
+              _buildDrawerItem(
+                context,
+                icon: Icons.info_outline,
+                title: 'About Us',
+                   iconColor: Color.fromRGBO(7, 94, 84, 1.0),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Reusable Drawer Item with Better Styling
+Widget _buildDrawerItem(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap, Color? iconColor}) {
+  return ListTile(
+    leading: Icon(icon, color: iconColor ?? Colors.blueGrey, size: 26),
+    title: Text(
+      title,
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    ),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+    onTap: onTap,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+    hoverColor: Colors.blue[50], // Subtle hover effect
+  );
+}
 }

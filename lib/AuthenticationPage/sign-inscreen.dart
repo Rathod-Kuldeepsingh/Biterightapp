@@ -1,6 +1,7 @@
 // Assuming you have a homepage screen
 //signing page
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -46,7 +47,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: password,
       );
 
+
       await userCredential.user!.updateDisplayName(name);
+      await FirebaseFirestore.instance.collection('kuldeep').add({
+        'fullname': name,
+        'email': email,
+       
+      });
       await userCredential.user!.sendEmailVerification();
       _showCustomSnackBar('Verification email sent to $email');
 
@@ -57,7 +64,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     } catch (e) {
       _showCustomSnackBar('Error: ${e.toString()}');
     }
+    
   }
+  
 
   bool _validatePassword(String password) {
     final passwordRegex = RegExp(r'^(?=.*[A-Z])(?=.*[\W_]).{6,}$');
@@ -78,7 +87,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         elevation: 6,
       ),
     );
+
   }
+
 
   @override
   void dispose() {

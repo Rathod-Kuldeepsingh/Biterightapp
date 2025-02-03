@@ -12,60 +12,64 @@ class ProductDetailScreen extends StatelessWidget {
     final imageUrl = product['image_url'];
 
     return Scaffold(
+       backgroundColor: Color(0xFFF5F5F5),
       appBar: AppBar(
+         backgroundColor: Color(0xFFFFFCF2),
         title: Text('Product Details'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image with proper fitting and size
-            if (imageUrl != null)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  imageUrl,
-                  height: 250,
-                  width: double.infinity,
-                  fit: BoxFit.fitHeight,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image with proper fitting and size
+              if (imageUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    imageUrl,
+                    height: 250,
+                    width: double.infinity,
+                    fit: BoxFit.fitHeight,
+                  ),
+                ),
+              SizedBox(height: 20),
+              Divider(color: Colors.blueAccent, thickness: 1.5),
+              Text(
+                'Product Overview',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
                 ),
               ),
-            SizedBox(height: 20),
-            Divider(color: Colors.blueAccent, thickness: 1.5),
-            Text(
-              'Product Overview',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
+              SizedBox(height: 24),
+              _buildProductCategory('Product Name', product['product_name'] ?? 'N/A'),
+              _buildProductCategory('Brand', product['brands'] ?? 'N/A'),
+              _buildProductCategory('Category', product['categories'] ?? 'N/A'),
+              _buildProductCategory('Ingredients', product['ingredients_text'] ?? 'N/A'),
+              SizedBox(height: 30),
+              Divider(color: Colors.blueAccent, thickness: 1.5),
+              SizedBox(height: 20),
+              Text(
+                'Nutrition Information',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent,
+                ),
               ),
-            ),
-            SizedBox(height: 24),
-            _buildProductCategory('Product Name', product['product_name'] ?? 'N/A'),
-            _buildProductCategory('Brand', product['brands'] ?? 'N/A'),
-            _buildProductCategory('Category', product['categories'] ?? 'N/A'),
-            _buildProductCategory('Ingredients', product['ingredients_text'] ?? 'N/A'),
-            SizedBox(height: 30),
-            Divider(color: Colors.blueAccent, thickness: 1.5),
-            SizedBox(height: 20),
-            Text(
-              'Nutrition Information',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
-              ),
-            ),
-            _buildProductCategory('Energy (kcal)', nutriments['energy-kcal']?.toString() ?? 'N/A'),
-            _buildProductCategory('Fat (g)', nutriments['fat']?.toString() ?? 'N/A'),
-            _buildProductCategory('Saturated Fat (g)', nutriments['saturated-fat']?.toString() ?? 'N/A'),
-            _buildProductCategory('Carbohydrates (g)', nutriments['carbohydrates']?.toString() ?? 'N/A'),
-            _buildProductCategory('Sugars (g)', nutriments['sugars']?.toString() ?? 'N/A'),
-            _buildProductCategory('Protein (g)', nutriments['proteins']?.toString() ?? 'N/A'),
-            _buildProductCategory('Salt (g)', nutriments['salt']?.toString() ?? 'N/A'),
-            _buildProductCategory('Fiber (g)', nutriments['fiber']?.toString() ?? 'N/A'),
-          ],
+              _buildProductCategory('Energy (kcal)', nutriments['energy-kcal']?.toString() ?? 'N/A'),
+              _buildProductCategory('Fat (g)', nutriments['fat']?.toString() ?? 'N/A'),
+              _buildProductCategory('Saturated Fat (g)', nutriments['saturated-fat']?.toString() ?? 'N/A'),
+              _buildProductCategory('Carbohydrates (g)', nutriments['carbohydrates']?.toString() ?? 'N/A'),
+              _buildProductCategory('Sugars (g)', nutriments['sugars']?.toString() ?? 'N/A'),
+              _buildProductCategory('Protein (g)', nutriments['proteins']?.toString() ?? 'N/A'),
+              _buildProductCategory('Salt (g)', nutriments['salt']?.toString() ?? 'N/A'),
+              _buildProductCategory('Fiber (g)', nutriments['fiber']?.toString() ?? 'N/A'),
+            ],
+          ),
         ),
       ),
     );

@@ -1,6 +1,6 @@
 
 
-import 'package:biterightapp/Articles/artcles.dart';
+
 import 'package:biterightapp/AuthenticationPage/forgotpage.dart';
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
 import 'package:biterightapp/AuthenticationPage/sign-inscreen.dart';
@@ -19,7 +19,7 @@ Future<void> main() async {
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: Home(),
+    home: Splash(),
     routes: {
     '/home' : (context) =>Home(),
     '/mainpage':(context) => BarcodeSearchScreen(),

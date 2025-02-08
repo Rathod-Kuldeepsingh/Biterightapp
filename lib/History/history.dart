@@ -47,9 +47,9 @@ class HistoryPage extends StatelessWidget {
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
                             product['image_url'],
-                            width: 70,
-                            height: 70,
-                            fit: BoxFit.cover,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.contain,
                           ),
                         )
                       : null,

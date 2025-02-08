@@ -4,8 +4,10 @@
 import 'package:biterightapp/AuthenticationPage/forgotpage.dart';
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
 import 'package:biterightapp/AuthenticationPage/sign-inscreen.dart';
+import 'package:biterightapp/History/history.dart';
 import 'package:biterightapp/HomePage/home.dart';
 import 'package:biterightapp/MainPages/dash.dart';
+import 'package:biterightapp/Profile/profile.dart';
 import 'package:biterightapp/SplashPage/splashscreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -19,9 +21,10 @@ Future<void> main() async {
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: Splash(),
+    home: Home(),
     routes: {
-    '/home' : (context) =>Home(),
+    '/history': (context) => HistoryPage(),
+    '/home' : (context) => Home(),
     '/mainpage':(context) => BarcodeSearchScreen(),
     '/forgot' : (context) => Emailf(),
     '/signup1' : (context) => SignUpScreen() ,

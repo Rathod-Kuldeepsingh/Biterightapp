@@ -4,6 +4,7 @@
 import 'package:biterightapp/AuthenticationPage/forgotpage.dart';
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
 import 'package:biterightapp/AuthenticationPage/sign-inscreen.dart';
+import 'package:biterightapp/Feedback/Feedback.dart';
 import 'package:biterightapp/History/history.dart';
 import 'package:biterightapp/HomePage/home.dart';
 import 'package:biterightapp/MainPages/dash.dart';
@@ -21,14 +22,15 @@ Future<void> main() async {
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: Home(),
+    home: Splash(),
     routes: {
     '/history': (context) => HistoryPage(),
     '/home' : (context) => Home(),
     '/mainpage':(context) => BarcodeSearchScreen(),
     '/forgot' : (context) => Emailf(),
     '/signup1' : (context) => SignUpScreen() ,
-    '/login' : (context)=> LoginScreen()
+    '/login' : (context)=> LoginScreen(),
+    '/feedback' : (context)=> FeedbackScreen()
     },
   ));
 }

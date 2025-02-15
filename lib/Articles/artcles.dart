@@ -5,6 +5,8 @@ import 'api_service.dart';
 
 
 class ArticlePage extends StatefulWidget {
+  const ArticlePage({super.key});
+
   @override
   _ArticlePageState createState() => _ArticlePageState();
 }

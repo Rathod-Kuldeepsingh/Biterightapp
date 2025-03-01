@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, deprecated_member_use, use_super_parameters, unused_field, library_private_types_in_public_api, use_build_context_synchronously
 
 import 'dart:convert';
+import 'package:biterightapp/MainPages/product.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -40,9 +41,9 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
   final BarcodeScanner _barcodeScanner = BarcodeScanner();
   bool _isScanning = false;
 
+  int selectedProductIndex = 0;
 
-
-   Future<void> saveSearchHistory(String query) async {
+  Future<void> saveSearchHistory(String query) async {
     try {
       // Save the search history to Firestore
       final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -60,7 +61,8 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
       print('Error saving search history: $e');
     }
   }
-   Future<void> getSuggestions(String query) async {
+
+  Future<void> getSuggestions(String query) async {
     if (query.isEmpty) {
       setState(() {
         _searchSuggestions = [];
@@ -76,7 +78,8 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
             .doc(userId)
             .collection('products')
             .where('product_name', isGreaterThanOrEqualTo: query)
-            .where('product_name', isLessThanOrEqualTo: '$query\uf8ff') // Prefix matching
+            .where('product_name',
+                isLessThanOrEqualTo: '$query\uf8ff') // Prefix matching
             .get();
 
         setState(() {
@@ -89,7 +92,6 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
       print('Error fetching suggestions: $e');
     }
   }
-
 
   Future<void> getProductByBarcode(String barcode) async {
     final url = 'https://world.openfoodfacts.org/api/v0/product/$barcode.json';
@@ -111,11 +113,10 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
           setState(() {
             _product = data['product'];
           });
-   
-         //
-         
-           saveProductToFirestore(_product!);
 
+          //
+
+          saveProductToFirestore(_product!);
 
           // Fetch suggested products after product is found
           fetchSuggestedProducts(_product!);
@@ -167,12 +168,13 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
           setState(() {
             _suggestedProducts =
                 List<Map<String, dynamic>>.from(data['products']);
-            
           });
-          //  saveSearchHistory(productName);
-           if (_suggestedProducts.isNotEmpty) {
-          saveProductToFirestore(_product!);
-        }
+          saveSearchHistory(productName);
+          if (_suggestedProducts.isNotEmpty) {
+            // for(int i = 0; i <_suggestedProducts.length; i++){
+            saveProductToFirestore(_suggestedProducts[selectedProductIndex]);
+            // }
+          }
         } else {
           setState(() {
             _errorMessage = 'No products found';
@@ -185,7 +187,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error: $e';
+        _errorMessage = 'Error: eefew $e';
       });
     } finally {
       setState(() {
@@ -285,27 +287,29 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
   }
 
   Future<void> saveProductToFirestore(Map<String, dynamic> product) async {
-  final userId = FirebaseAuth.instance.currentUser?.uid;
-  if (userId == null) return; // Ensure user is authenticated
-  
-  try {
-    // Save product data to Firestore under the user's collection
-    await FirebaseFirestore.instance.collection('users').doc(userId).collection('products').add({
-      'product_name': product['product_name'] ?? 'N/A',
-      'brands': product['brands'] ?? 'N/A',
-      'categories': product['categories'] ?? 'N/A',
-      'image_url': product['image_url'] ?? '',
-      'ingredients_text': product['ingredients_text'] ?? 'N/A',
-      'nutriments': product['nutriments'] ?? {},
-      'timestamp': FieldValue.serverTimestamp(),
-    });
-    print('Product saved to Firestore');
-  } catch (e) {
-    print('Error saving product to Firestore: $e');
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return; // Ensure user is authenticated
+
+    try {
+      // Save product data to Firestore under the user's collection
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('products')
+          .add({
+        'product_name': product['product_name'] ?? 'N/A',
+        'brands': product['brands'] ?? 'N/A',
+        'categories': product['categories'] ?? 'N/A',
+        'image_url': product['image_url'] ?? '',
+        'ingredients_text': product['ingredients_text'] ?? 'N/A',
+        'nutriments': product['nutriments'] ?? {},
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      print('Product saved to Firestore');
+    } catch (e) {
+      print('Error saving product to Firestore: $e');
+    }
   }
-}
-
-
 
   @override
   void dispose() {
@@ -313,17 +317,157 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
     super.dispose();
   }
 
+  List<String> categories = [
+    'Snacks',
+    'Chocolates',
+    'Beverages',
+    'Drinks',
+    'Vegan',
+    'Organic',
+    'Low-Fat',
+    'Sugar-Free',
+    'Gluten-Free',
+    'Low-Calorie'
+  ];
+
+  // Selected categories
+  List<String> selectedCategories = [];
+
+  // List to store fetched products
+  List<Map<String, dynamic>> products = [];
+
+  showLoader() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Center(
+            child: CircularProgressIndicator(
+          color: Colors.black,
+        ));
+      },
+    );
+  }
+
+  closeLoader() {
+    Navigator.pop(context);
+  }
+  
+
+  // Function to fetch products from OpenFoodFacts API
+  Future<void> fetchProductsFromAPI() async {
+    print('Fetching products from API...');
+    showLoader();
+    List<Map<String, dynamic>> allProducts = [];
+
+    for (String category in selectedCategories) {
+      final response = await http.get(
+           Uri.parse(
+            "https://world.openfoodfacts.org/cgi/search.pl?search_terms=$category&search_simple=1&action=process&json=1"),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        List productsList = data['products'] ?? [];
+
+        for (var product in productsList) {
+          if (product["product_name"] != null) {
+            allProducts.add({
+              "product_name": product["product_name"],
+              "image_url": product["image_url"],
+              "brands": product["brands"] ?? "N/A",
+              "categories": product["categories"] ?? "N/A",
+              "ingredients_text": product["ingredients_text"] ?? "N/A",
+              "nutriments": product["nutriments"] ?? {},
+            });
+          }
+        }
+      }
+    }
+
+    setState(() {
+      products = allProducts;
+    });
+
+    debugPrint("Fetched Products: ${products.length}");
+    closeLoader();
+  }
+
+
+ 
+  // Show category filter bottom sheet
+  void showCategoryFilter() {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: EdgeInsets.all(10),
+              height: 400,
+              child: Column(
+                children: [
+                  Text("Select Categories",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Expanded(
+                    child: ListView(
+                      children: categories.map((category) {
+                        return CheckboxListTile(
+                          title: Text(category),
+                          value: selectedCategories.contains(category),
+                          onChanged: (bool? value) {
+                            setModalState(() {
+                              if (value == true) {
+                                selectedCategories.add(category);
+                              } else {
+                                selectedCategories.remove(category);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      fetchProductsFromAPI();
+                    },
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor:Color(0xFF27445D) ),
+                    child: Text("Apply Filter",style: 
+                    TextStyle(color: Colors.white,
+                    fontWeight: FontWeight.bold),),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-    backgroundColor: Color(0xFFF5F5F5),
 
+      backgroundColor: Color(0xFFF5F5F5),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Color(0xFFF5F5F5),
+        actions: [
+          IconButton(
+            onPressed: showCategoryFilter,
+            icon: Icon(Icons.filter_list),
+          )
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              SizedBox(height: 50),
+              SizedBox(height: 10),
               Column(
                 children: [
                   TextField(
@@ -360,8 +504,8 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
                           EdgeInsets.symmetric(vertical: 16, horizontal: 20),
                     ),
                     onChanged: (value) {
-                getSuggestions(value); // Fetch suggestions as user types
-              },
+                      getSuggestions(value); // Fetch suggestions as user types
+                    },
                   ),
                 ],
               ),
@@ -388,7 +532,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:  Color(0xFF27445D),
+                      backgroundColor: Color(0xFF27445D),
                       padding:
                           EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -472,6 +616,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
 
                         return GestureDetector(
                           onTap: () {
+                            selectedProductIndex = index;
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -513,7 +658,87 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
                       },
                     ),
                 ],
-              )
+              ),
+              Divider(
+                thickness: 1.5,
+                color: Color(0xFF27445D),
+              ),
+              Text(
+                'Filtered Products:',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+              products.isEmpty
+                  ? Center(
+                      child: Text(
+                          "No products found. Click filter to select categories."))
+                  : GridView.builder(
+                      padding: EdgeInsets.all(10),
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2, // Two items per row
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        childAspectRatio:
+                            0.75, // Adjust aspect ratio for better fit
+                      ),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        var product = products[index];
+                        return GestureDetector(
+                          onTap: () async {
+                            await saveProductToFirestore(products[index]);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProductDetailScreen(
+                                  product:
+                                      products[index], // Pass full product data
+                                ),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            elevation: 4,
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: product['image_url'] != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(12)),
+                                          child: Image.network(
+                                            product['image_url'],
+                                            width: double.infinity,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        )
+                                      : Icon(Icons.fastfood, size: 80),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    product['product_name'] ??
+                                        "Unknown Product",
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    )
             ],
           ),
         ),
@@ -522,111 +747,111 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
   }
 }
 
-class ProductDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> product;
+// class ProductDetailScreen extends StatelessWidget {
+//   final Map<String, dynamic> product;
 
-  const ProductDetailScreen({Key? key, required this.product})
-      : super(key: key);
+//   const ProductDetailScreen({Key? key, required this.product})
+//       : super(key: key);
 
-  @override
-  Widget build(BuildContext context) {
-    final nutriments = product['nutriments'] ?? {};
-    final imageUrl = product['image_url'];
+//   @override
+//   Widget build(BuildContext context) {
+//     final nutriments = product['nutriments'] ?? {};
+//     final imageUrl = product['image_url'];
 
-    return Scaffold(
-       backgroundColor: Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: Text('Product Details'),
-          backgroundColor:  Color(0xFFFFFCF2)
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (imageUrl != null)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    imageUrl,
-                    height: 250,
-                    width: double.infinity,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              SizedBox(height: 20),
-              Divider(color: Colors.blueAccent, thickness: 1.5),
-              Text(
-                'Product Overview',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                ),
-              ),
-              SizedBox(height: 24),
-              _buildProductCategory(
-                  'Product Name', product['product_name'] ?? 'N/A'),
-              _buildProductCategory('Brand', product['brands'] ?? 'N/A'),
-              _buildProductCategory('Category', product['categories'] ?? 'N/A'),
-              _buildProductCategory(
-                  'Ingredients', product['ingredients_text'] ?? 'N/A'),
-              SizedBox(height: 30),
-              Divider(color: Colors.blueAccent, thickness: 1.5),
-              SizedBox(height: 20),
-              Text(
-                'Nutrition Information',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueAccent,
-                ),
-              ),
-              _buildProductCategory('Energy (kcal)',
-                  nutriments['energy-kcal']?.toString() ?? 'N/A'),
-              _buildProductCategory(
-                  'Fat (g)', nutriments['fat']?.toString() ?? 'N/A'),
-              _buildProductCategory('Saturated Fat (g)',
-                  nutriments['saturated-fat']?.toString() ?? 'N/A'),
-              _buildProductCategory('Carbohydrates (g)',
-                  nutriments['carbohydrates']?.toString() ?? 'N/A'),
-              _buildProductCategory(
-                  'Sugars (g)', nutriments['sugars']?.toString() ?? 'N/A'),
-              _buildProductCategory(
-                  'Protein (g)', nutriments['proteins']?.toString() ?? 'N/A'),
-              _buildProductCategory(
-                  'Salt (g)', nutriments['salt']?.toString() ?? 'N/A'),
-              _buildProductCategory(
-                  'Fiber (g)', nutriments['fiber']?.toString() ?? 'N/A'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+//     return Scaffold(
+//        backgroundColor: Color(0xFFF5F5F5),
+//       appBar: AppBar(
+//         title: Text('Product Details'),
+//           backgroundColor:  Color(0xFFFFFCF2)
+//       ),
+//       body: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: SingleChildScrollView(
+//           child: Column(
+//             crossAxisAlignment: CrossAxisAlignment.start,
+//             children: [
+//               if (imageUrl != null)
+//                 ClipRRect(
+//                   borderRadius: BorderRadius.circular(12),
+//                   child: Image.network(
+//                     imageUrl,
+//                     height: 250,
+//                     width: double.infinity,
+//                     fit: BoxFit.contain,
+//                   ),
+//                 ),
+//               SizedBox(height: 20),
+//               Divider(color: Colors.blueAccent, thickness: 1.5),
+//               Text(
+//                 'Product Overview',
+//                 style: TextStyle(
+//                   fontSize: 28,
+//                   fontWeight: FontWeight.bold,
+//                   color: Colors.blueAccent,
+//                 ),
+//               ),
+//               SizedBox(height: 24),
+//               _buildProductCategory(
+//                   'Product Name', product['product_name'] ?? 'N/A'),
+//               _buildProductCategory('Brand', product['brands'] ?? 'N/A'),
+//               _buildProductCategory('Category', product['categories'] ?? 'N/A'),
+//               _buildProductCategory(
+//                   'Ingredients', product['ingredients_text'] ?? 'N/A'),
+//               SizedBox(height: 30),
+//               Divider(color: Colors.blueAccent, thickness: 1.5),
+//               SizedBox(height: 20),
+//               Text(
+//                 'Nutrition Information',
+//                 style: TextStyle(
+//                   fontSize: 24,
+//                   fontWeight: FontWeight.bold,
+//                   color: Colors.blueAccent,
+//                 ),
+//               ),
+//               _buildProductCategory('Energy (kcal)',
+//                   nutriments['energy-kcal']?.toString() ?? 'N/A'),
+//               _buildProductCategory(
+//                   'Fat (g)', nutriments['fat']?.toString() ?? 'N/A'),
+//               _buildProductCategory('Saturated Fat (g)',
+//                   nutriments['saturated-fat']?.toString() ?? 'N/A'),
+//               _buildProductCategory('Carbohydrates (g)',
+//                   nutriments['carbohydrates']?.toString() ?? 'N/A'),
+//               _buildProductCategory(
+//                   'Sugars (g)', nutriments['sugars']?.toString() ?? 'N/A'),
+//               _buildProductCategory(
+//                   'Protein (g)', nutriments['proteins']?.toString() ?? 'N/A'),
+//               _buildProductCategory(
+//                   'Salt (g)', nutriments['salt']?.toString() ?? 'N/A'),
+//               _buildProductCategory(
+//                   'Fiber (g)', nutriments['fiber']?.toString() ?? 'N/A'),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
 
-  Widget _buildProductCategory(String category, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            category,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            value,
-            style: TextStyle(fontSize: 16, color: Colors.black54),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//   Widget _buildProductCategory(String category, String value) {
+//     return Padding(
+//       padding: const EdgeInsets.only(bottom: 12.0),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Text(
+//             category,
+//             style: TextStyle(
+//               fontSize: 18,
+//               fontWeight: FontWeight.bold,
+//               color: Colors.black,
+//             ),
+//           ),
+//           SizedBox(height: 5),
+//           Text(
+//             value,
+//             style: TextStyle(fontSize: 16, color: Colors.black54),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

@@ -191,14 +191,14 @@ Future<void> _editProfile() {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
 
               // Profile Options
               _buildProfileOption(
                 context,
-                icon: Icons.settings,
-                title: 'Settings',
-                onTap: () => Navigator.pushNamed(context, "/settings"),
+                icon: Icons.compare_arrows_sharp,
+                title: 'Compare Products',
+                onTap: () => Navigator.pushNamed(context, "/compare"),
               ),
               _buildProfileOption(
                 context,
@@ -210,7 +210,7 @@ Future<void> _editProfile() {
                 context,
                 icon: Icons.help_outline,
                 title: 'Help & Support',
-                onTap: () => Navigator.pushNamed(context, "/help"),
+                onTap: () => Navigator.pushNamed(context, "/support"),
               ),
               _buildProfileOption(
                 context,

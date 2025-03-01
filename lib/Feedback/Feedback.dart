@@ -85,6 +85,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        iconTheme: IconThemeData(color: Colors.white),
         toolbarHeight: 40,
         title: Text('Feedback', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white)),
         backgroundColor: Color(0xFF27445D),
@@ -174,7 +175,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
               SizedBox(width: 10),
               Text(
                 'Submitting...',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold ,color: Colors.white),
               ),
             ],
           )

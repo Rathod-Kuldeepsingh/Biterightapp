@@ -1,7 +1,8 @@
 //home navigation and divider drawer
 // ignore_for_file: use_build_context_synchronously, unused_element
 
-import 'package:biterightapp/Articles/artcles.dart';
+
+import 'package:biterightapp/Articles/articals.dart';
 import 'package:biterightapp/History/history.dart';
 import 'package:biterightapp/MainPages/dash.dart';
 import 'package:biterightapp/Profile/Profile.dart';
@@ -20,7 +21,7 @@ class _HomeState extends State<Home> {
   // User? _currentUser;
 
   // Pages for navigating content
-  final List<Widget> _pages = [BarcodeSearchScreen(), ArticlePage() ,HistoryPage(),UserProfileScreen()];
+  final List<Widget> _pages = [BarcodeSearchScreen(), FoodNewsScreen() ,HistoryPage(),UserProfileScreen()];
 
   // Index for the selected page in the bottom navigation bar
   int _selectedIndex = 0;
@@ -46,13 +47,13 @@ class _HomeState extends State<Home> {
   void _navigateToHome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => BarcodeSearchScreen()), // Replace with your home page widget
+      MaterialPageRoute(builder: (context) => FoodNewsScreen()), // Replace with your home page widget
     );
   }
     void _navigateToArticle() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => ArticlePage()), // Replace with your home page widget
+      MaterialPageRoute(builder: (context) => FoodNewsScreen()), // Replace with your home page widget
     );
   }
    void _navigateToHistory() {
@@ -154,6 +155,7 @@ Future<bool> _onWillPop() async {
       
         backgroundColor: Color(0xFFFFFCF2),
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           toolbarHeight: 50,
           backgroundColor: Color(0xFF27445D),
           title: Text(

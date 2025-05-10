@@ -225,10 +225,10 @@ class _ProductComparisonScreenState extends State<ProductComparisonScreen> {
             ),
           ),
         ),
-        IconButton(
-          icon: Icon(Icons.qr_code_scanner, color: Colors.blue),
-          onPressed: () => _scanBarcode(controller),
-        ),
+        // IconButton(
+        //   icon: Icon(Icons.qr_code_scanner, color: Colors.blue),
+        //   onPressed: () => _scanBarcode(controller),
+        // ),
       ],
     );
   }
@@ -254,6 +254,7 @@ class _ProductComparisonScreenState extends State<ProductComparisonScreen> {
 
     return Card(
       elevation: 3,
+      color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -334,6 +335,7 @@ class _ProductComparisonScreenState extends State<ProductComparisonScreen> {
     final maxValue = (values1 + values2).reduce((a, b) => a > b ? a : b) + 5;
 
     return Card(
+      color: Colors.white,
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(

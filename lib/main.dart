@@ -4,6 +4,7 @@
 // ignore_for_file: unused_import
 
 import 'package:biterightapp/About/about.dart';
+import 'package:biterightapp/Allergy/abc.dart';
 import 'package:biterightapp/Articles/articals.dart';
 import 'package:biterightapp/AuthenticationPage/forgotpage.dart';
 import 'package:biterightapp/AuthenticationPage/loginscreen.dart';
@@ -32,7 +33,7 @@ Future<void> main() async {
 
   runApp(MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: Home(),
+    home: Splash(),
     routes: {
     '/productDetail': (context) => ProductDetailScreen(product: {}),
     '/history': (context) => HistoryPage(),
@@ -44,7 +45,8 @@ Future<void> main() async {
     '/feedback' : (context)=> FeedbackScreen(),
     '/about' : (context) => AboutUsPage(),
     '/support': (context) => SupportHelpPage(),
-    '/compare': (context) => ProductComparisonScreen()
+    '/compare': (context) => ProductComparisonScreen(),
+    '/allergyadd': (Context) => AllergySettingsScreen()
 
     },
   ));

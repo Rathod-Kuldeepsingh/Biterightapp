@@ -171,9 +171,9 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
           });
           saveSearchHistory(productName);
           if (_suggestedProducts.isNotEmpty) {
-            // for(int i = 0; i <_suggestedProducts.length; i++){
-            saveProductToFirestore(_suggestedProducts[selectedProductIndex]);
-            // }
+           
+           saveProductToFirestore(_suggestedProducts[selectedProductIndex]);
+            
           }
         } else {
           setState(() {
@@ -401,6 +401,7 @@ class _BarcodeSearchScreenState extends State<BarcodeSearchScreen> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             return Container(
+              
               padding: EdgeInsets.all(10),
               height: 400,
               child: Column(

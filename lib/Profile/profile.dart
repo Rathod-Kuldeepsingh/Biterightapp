@@ -200,6 +200,12 @@ Future<void> _editProfile() {
                 title: 'Compare Products',
                 onTap: () => Navigator.pushNamed(context, "/compare"),
               ),
+               _buildProfileOption(
+                context,
+                icon: Icons.dangerous_outlined,
+                title: 'Alergy Add',
+                onTap: () => Navigator.pushNamed(context, "/allergyadd"),
+              ),
               _buildProfileOption(
                 context,
                 icon: Icons.feedback,

@@ -6,16 +6,26 @@ import 'package:url_launcher/url_launcher.dart';
 const String apiKey = "f0832778574446d39910d56a75bbae1c";
 const String baseUrl = "https://newsapi.org/v2/everything";
 
+/// Fetches only food-related news articles
 Future<List<Map<String, dynamic>>> fetchFoodArticles() async {
   final Uri url = Uri.parse(
-      "$baseUrl?q=food OR nutrition OR health OR diet&language=en&sortBy=publishedAt&pageSize=50&apiKey=$apiKey");
+      "$baseUrl?q=food&language=en&sortBy=publishedAt&pageSize=50&apiKey=$apiKey");
 
   final response = await http.get(url);
 
   if (response.statusCode == 200) {
     final Map<String, dynamic> data = jsonDecode(response.body);
     List<Map<String, dynamic>> articles = List<Map<String, dynamic>>.from(
-        data["articles"]?.where((article) => article["urlToImage"] != null) ??
+        data["articles"]?.where((article) =>
+            article["urlToImage"] != null &&
+            (article["title"].toLowerCase().contains("food") ||
+                article["title"].toLowerCase().contains("nutrition") ||
+                article["title"].toLowerCase().contains("diet") ||
+                article["title"].toLowerCase().contains("healthy") ||
+                article["description"].toLowerCase().contains("food") ||
+                article["description"].toLowerCase().contains("nutrition") ||
+                article["description"].toLowerCase().contains("diet") ||
+                article["description"].toLowerCase().contains("healthy"))) ??
             []);
 
     return articles.take(20).toList();
@@ -24,8 +34,7 @@ Future<List<Map<String, dynamic>>> fetchFoodArticles() async {
   }
 }
 
-
-
+/// Food News Screen
 class FoodNewsScreen extends StatefulWidget {
   @override
   _FoodNewsScreenState createState() => _FoodNewsScreenState();
@@ -40,7 +49,6 @@ class _FoodNewsScreenState extends State<FoodNewsScreen> {
     _fetchArticles();
   }
 
-  /// Fetch new articles and update state
   Future<void> _fetchArticles() async {
     setState(() {
       _articlesFuture = fetchFoodArticles();
@@ -51,26 +59,17 @@ class _FoodNewsScreenState extends State<FoodNewsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      // appBar: AppBar(
-      //   title: Text('Food News'),
-      //   actions: [
-      //     IconButton(
-      //       icon: Icon(Icons.refresh),
-      //       onPressed: _fetchArticles, // Refresh articles on button press
-      //     ),
-      //   ],
-      // ),
       body: RefreshIndicator(
         color: Colors.black,
         backgroundColor: Colors.white,
-        onRefresh: _fetchArticles, // Pull-to-refresh
+        onRefresh: _fetchArticles,
         child: FutureBuilder<List<Map<String, dynamic>>>(
           future: _articlesFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(
+              return Center(
+                  child: CircularProgressIndicator(
                 color: Colors.black,
-                backgroundColor: Colors.white,
               ));
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
@@ -134,12 +133,13 @@ class _FoodNewsScreenState extends State<FoodNewsScreen> {
     );
   }
 
-void _openArticle(String url) async {
-  final Uri uri = Uri.parse(url);
+  void _openArticle(String url) async {
+    final Uri uri = Uri.parse(url);
 
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  } else {
-    throw 'Could not launch $url';
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      await launchUrl(uri, mode: LaunchMode.platformDefault);
+    }
   }
-}}
+}

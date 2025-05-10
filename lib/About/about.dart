@@ -53,7 +53,7 @@ class AboutUsPage extends StatelessWidget {
               _buildFeatureCard(Icons.bar_chart, "Nutritional Breakdown", "Get in-depth analysis of nutrients."),
               _buildFeatureCard(Icons.warning, "Harmful Additive Alerts", "Avoid unhealthy ingredients."),
               _buildFeatureCard(Icons.recommend, "Personalized Recommendations", "Based on your health conditions."),
-              // _buildFeatureCard(Icons.local_dining, "Allergy & Dietary Filters", "Find suitable products for you."),
+               _buildFeatureCard(Icons.local_dining, "Allergy & Dietary Filters", "Find suitable products for you."),
               _buildFeatureCard(Icons.swap_horiz, "Healthier Alternatives", "Discover better food choices."),
               SizedBox(height: 20),
               Divider(color: Color(0xFF27445D).withOpacity(0.5), thickness: 1.5),
